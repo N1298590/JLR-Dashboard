@@ -2,26 +2,27 @@ import tkinter as tk
 from tkinter import messagebox
 
 
+# Defining usernames and passwords
 users = {
     "manager": "manager123",
-    "employee": "employee123"
+    "employee": "employee123",    
 }
 
-
+# Login page
 def login():
     username = entry_user.get()
     password = entry_pass.get()
 
+    # Validating users
     if username in users and users[username] == password:
         role = username.capitalize()
-        messagebox.showinfo("Success", f"Welcome {role}")
-        window.destroy()
+        messagebox.showinfo("Success", f"Welcome {role}")        
+        window.destroy()       
         
     else:
         messagebox.showerror("Error", "Invalid login details")
 
-
-
+# Layout of Login 
 window = tk.Tk()
 window.title("Secure Login")
 window.geometry("400x450")
@@ -38,17 +39,15 @@ tk.Label(
     bg="#2c2c3c"
 ).pack(pady=(0, 20))
 
-
 tk.Label(frame, text="Username", fg="white", bg="#2c2c3c").pack(anchor="w")
 entry_user = tk.Entry(frame, width=25, font=("Segoe UI", 10))
 entry_user.pack(pady=8)
-
 
 tk.Label(frame, text="Password", fg="white", bg="#2c2c3c").pack(anchor="w")
 entry_pass = tk.Entry(frame, width=25, font=("Segoe UI", 10), show="*")
 entry_pass.pack(pady=8)
 
-
+# Login Buttons
 tk.Button(
     frame,
     text="Login",
@@ -61,3 +60,4 @@ tk.Button(
 ).pack(pady=20)
 
 window.mainloop()
+
