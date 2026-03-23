@@ -2,6 +2,8 @@ import tkinter as tk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
+import readiness as rd
+
 
 
 def make_line_chart(ax):
@@ -50,6 +52,10 @@ CHARTS = [make_line_chart, make_bar_chart, make_scatter_chart,
 
 def on_button_click(idx):
     print(f"Button {BUTTON_NAME[idx]} clicked!")
+    if idx == 0:
+            win = tk.Toplevel(root)  # create a new window to hold the dashboard
+            dash = rd.Dashboard(master=win, data_path='Copy of Data set examples_Main.xlsx')
+            dash.pack(fill="both", expand=True)
 
 BUTTON_NAME =  ['Quality WCPA', 'Supplier Readiness', 'timing',
                 'Customer waiting list', 'feature readiness', ' button']
@@ -65,30 +71,33 @@ title_lbl = tk.Label(root, text="📊  Graph Dashboard", font=("Georgia", 14, "b
                      bg="#2C3E50", fg="#ECF0F1", pady=6)
 title_lbl.grid(row=0, column=0, columnspan=3)
 
-for i, chart_func in enumerate(CHARTS):
-    row, col = divmod(i, 3)
-    frame = tk.Frame(root, bg="#34495E", bd=2, relief="flat",
-                     highlightbackground="#4A90D9", highlightthickness=1)
-    frame.grid(row=row * 2 + 1, column=col, padx=8, pady=(5, 0), sticky="nsew")
+def start():
+    for i, chart_func in enumerate(CHARTS):
+        row, col = divmod(i, 3)
+        frame = tk.Frame(root, bg="#34495E", bd=2, relief="flat",
+                         highlightbackground="#4A90D9", highlightthickness=1)
+        frame.grid(row=row * 2 + 1, column=col, padx=8, pady=(5, 0), sticky="nsew")
 
-    fig, ax = plt.subplots(figsize=(2.6, 1.9), dpi=85)
-    fig.patch.set_facecolor("#34495E")
-    chart_func(ax)
-    fig.tight_layout(pad=1.2)
+        fig, ax = plt.subplots(figsize=(2.6, 1.9), dpi=85)
+        fig.patch.set_facecolor("#34495E")
+        chart_func(ax)
+        fig.tight_layout(pad=1.2)
 
-    canvas = FigureCanvasTkAgg(fig, master=frame)
-    canvas.draw()
-    canvas.get_tk_widget().pack()
+        canvas = FigureCanvasTkAgg(fig, master=frame)
+        canvas.draw()
+        canvas.get_tk_widget().pack()
 
-    btn = tk.Button(root, text=BUTTON_NAME[i],
-                    font=("Helvetica", 9, "bold"),
-                    bg="#4A90D9", fg="Black",
-                    activebackground="#2980B9", activeforeground="white",
-                    relief="flat", padx=12, pady=3, cursor="hand2",
-                    command=lambda idx=i: on_button_click(idx))
-    btn.grid(row=row * 2 + 2, column=col, pady=(3, 8))
+        btn = tk.Button(root, text=BUTTON_NAME[i],
+                        font=("Helvetica", 9, "bold"),
+                        bg="#4A90D9", fg="Black",
+                        activebackground="#2980B9", activeforeground="white",
+                        relief="flat", padx=12, pady=3, cursor="hand2",
+                        command=lambda idx=i: on_button_click(idx))
+        btn.grid(row=row * 2 + 2, column=col, pady=(3, 8))
 
-for c in range(3):
-    root.columnconfigure(c, weight=1)
+    for c in range(3):
+        root.columnconfigure(c, weight=1)
 
-root.mainloop()
+    root.mainloop()
+
+start()
