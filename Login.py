@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
+import Timing as Ti
+
 
 
 # Defining usernames and passwords
@@ -16,8 +18,8 @@ def login():
     # Validating users
     if username in users and users[username] == password:
         role = username.capitalize()
-        messagebox.showinfo("Success", f"Welcome {role}")        
-        window.destroy()       
+        window.destroy()              
+        Ti.dashboard()
         
     else:
         messagebox.showerror("Error", "Invalid login details")
@@ -27,6 +29,8 @@ window = tk.Tk()
 window.title("Secure Login")
 window.geometry("400x450")
 window.configure(bg="#1e1e2f")
+window.lift()              # ← Add this
+window.focus_force()  
 
 frame = tk.Frame(window, bg="#2c2c3c", padx=30, pady=30)
 frame.place(relx=0.5, rely=0.5, anchor="center")
@@ -59,5 +63,7 @@ tk.Button(
     command=login
 ).pack(pady=20)
 
+
 window.mainloop()
+
 
