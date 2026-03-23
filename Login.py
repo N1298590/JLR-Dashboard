@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-import Timing as Ti
+import landing_page as lp
 
 
 
@@ -19,7 +19,7 @@ def login():
     if username in users and users[username] == password:
         role = username.capitalize()
         window.destroy()              
-        Ti.dashboard()
+        lp.start()
         
     else:
         messagebox.showerror("Error", "Invalid login details")
