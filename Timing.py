@@ -2,6 +2,9 @@ import pandas as pd
 import tkinter as tk
 from tkinter import ttk
 from datetime import date
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.dates as mdates
 
 
 today = pd.Timestamp.today()
@@ -37,7 +40,7 @@ milestones = [("Kickoff", "Baseline_Programme_Kickoff", "Approved_Programme_Kick
 
 def dashboard():
 
-    df = pd.read_excel(r"JLR Coursework\Data set examples_Main.xlsx", sheet_name= "Timing")
+    df = pd.read_excel(r"JLR Coursework\Data Analysis Coursework\Data set examples_Main.xlsx", sheet_name= "Timing")
     print("dashboard called")
     def rag_status(status):
             if status == "On Track":
@@ -158,6 +161,31 @@ def dashboard():
     cardRisk, cardRiskSub = summary_cards(2, amber, textAmber,"AT RISK")
     cardDelayed, cardDelayedSub = summary_cards(3, red, textRed ,"DELAYED")
 
+    graphCon = tk.Frame(window, bg= bgDark, height= 250)
+    graphCon.pack(fill= "x", expand = False, padx= 20, pady= (10,20))
+    graphCon.pack_propagate(False)
+    graphCon.columnconfigure(0, weight= 1)
+    graphCon.columnconfigure(1, weight= 1)
+    graphCon.rowconfigure(0, weight=1)
+
+    leftGraph = tk.Frame(graphCon, bg= bgDark)  
+    leftGraph.grid(row= 0, column= 0, sticky= "nsew", padx= (0,10))
+
+    rightGraph = tk.Frame(graphCon, bg= bgDark) 
+    rightGraph.grid(row= 0, column= 1, sticky= "nsew", padx= (10,0))    
+
+    figure1 = Figure(figsize=(5,2), dpi=80)    
+    ax1 = figure1.add_subplot(111)
+
+    canva1 = FigureCanvasTkAgg(figure1, master= leftGraph)
+    canva1.get_tk_widget().pack(fill= "both", expand = True)
+
+    figure2 = Figure(figsize=(5,2), dpi=80)
+    ax2 = figure2.add_subplot(111)  
+    canva2 = FigureCanvasTkAgg(figure2, master= rightGraph) 
+    canva2.get_tk_widget().pack(fill="both", expand=True)
+
+
 
     tableFrame = tk.Frame(window, bg= bgDark)
     tableFrame.pack(fill= "both", expand= True, padx =20, pady=(0,15))
@@ -229,9 +257,6 @@ def dashboard():
     table.tag_configure("On Track", foreground=  green, background=bgDark)
     table.tag_configure("At Risk", foreground = amber, background= bgDark)
     table.tag_configure("Delayed", foreground = red, background= bgDark)
-    table.tag_configure("2nd_On Track", foreground = textGreen, background=bgSurface )
-    table.tag_configure("2nd_At Risk", foreground= textAmber, background= bgSurface)
-    table.tag_configure("2nd_Delayed", foreground = textRed, background= bgSurface)
 
     bottom = tk.Frame(table, bg = bgSurface, height= 40)
     bottom.pack(fill= "x")
@@ -249,6 +274,7 @@ def dashboard():
     def updateTable(*args):
         
         filtered = df.copy()
+        
             
 
         programmeSelect = programmeSelection.get()
@@ -305,10 +331,7 @@ def dashboard():
         i = 0
         for index, row in filtered.iterrows():
             
-            if i % 2 == 0:
-                tag = row["Project_Status"]
-            else:
-                tag = "2nd_" + row["Project_Status"]
+            tag = row["Project_Status"]
 
             if pd.notna(row["Approved_Programme_Completion"]):
                 deadline = row["Approved_Programme_Completion"].strftime("%d %b %Y")
@@ -329,6 +352,75 @@ def dashboard():
             i = i + 1
 
 
+        # Trend Graph
+        ax1.clear()
+
+        trenddf = filtered.copy()
+        trenddf = trenddf.dropna(subset=["Approved_Programme_Completion"])
+
+        trenddf["Month"] = trenddf["Approved_Programme_Completion"].dt.to_period("M")
+        monthly = trenddf.groupby("Month")["slip_time"].mean().reset_index()
+        monthly["Month"] = monthly["Month"].dt.to_timestamp()
+
+        if len(monthly) > 0:
+            ax1.plot(
+                monthly["Month"],
+                monthly["slip_time"],
+                marker="o",
+                linestyle="-",
+                linewidth=2
+            )
+
+        ax1.set_title(
+            "Slip Time Trend",
+            color=primaryText,
+            fontsize=12,
+            fontweight="bold"
+        )
+
+        ax1.set_facecolor(bgDark)
+        figure1.patch.set_facecolor(bgDark)
+
+        for spine in ax1.spines.values():
+            spine.set_visible(False)
+
+        ax1.tick_params(colors=primaryText)
+        ax1.grid(axis="y", linestyle="--", alpha=0.3)
+
+        ax1.xaxis.set_major_formatter(mdates.DateFormatter('%b %y'))
+        figure1.autofmt_xdate()
+
+        canva1.draw()
+        # Pie Chart
+        ax2.clear()
+
+        labels = ["On Track", "At Risk", "Delayed"]
+        values = [onTrack, atRisk, delayed]
+
+        if sum(values) > 0:
+            ax2.pie(
+                values,
+                labels=labels,
+                colors=[green, amber, red],
+                autopct="%1.1f%%",
+                pctdistance=1.1,
+                labeldistance=1.5,
+                startangle=90,
+                textprops={"color": primaryText},
+                wedgeprops = {"width": 0.4}
+            )
+
+        ax2.set_title(
+            "Project Status Distribution",
+            color=primaryText,
+            fontsize=12,
+            fontweight="bold"
+        )
+
+        ax2.set_facecolor(bgDark)
+        figure2.patch.set_facecolor(bgDark)
+
+        canva2.draw()
 
     dropdownProgramme.bind("<<ComboboxSelected>>", updateTable)
     dropdownPlatform.bind("<<ComboboxSelected>>", updateTable)
@@ -339,10 +431,4 @@ def dashboard():
     updateTable()
     window.mainloop()
 
-
-
-
-
-
-
-    
+dashboard()
